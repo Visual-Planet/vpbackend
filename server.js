@@ -15,12 +15,11 @@ app.use(express.json());
 app.use(express.static('uploads'));
 
 const db = mysql.createConnection({
-  host:"localhost",
-  user:"root",
-  password: "",
-  database: "vp"
-})
-
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
 const storage = multer.diskStorage({
   destination: (req, file, cb)=>{
     cb(null, 'uploads/images'); // Directory where images will be stored
@@ -74,7 +73,7 @@ app.get('/getsig', (req, res) => {
 });
 app.post('/signup', (req, res) => {
   // Note: Removed the id field from the INSERT statement
-  const sql = "INSERT INTO Users_Database (`UserName`, `Password`, `Country`, `State`, `District`, `Area`) VALUES (?, ?, ?, ?, ?, ?)";
+  const sql = "INSERT INTO users_database (`UserName`, `Password`, `Country`, `State`, `District`, `Area`) VALUES (?, ?, ?, ?, ?, ?)";
   
   // Removed the UUID generation and the id from the values array
   const values = [
@@ -105,15 +104,15 @@ app.get('/suggestions/:type', (req, res) => {
 
   switch (type) {
     case 'countries':
-      sql = "SELECT DISTINCT Country AS value FROM Users_Database";
+      sql = "SELECT DISTINCT Country AS value FROM users_database";
       fieldName = 'value';
       break;
     case 'states':
-      sql = "SELECT DISTINCT State AS value FROM Users_Database";
+      sql = "SELECT DISTINCT State AS value FROM users_database";
       fieldName = 'value';
       break;
     case 'districts':
-      sql = "SELECT DISTINCT District AS value FROM Users_Database";
+      sql = "SELECT DISTINCT District AS value FROM users_database";
       fieldName = 'value';
       break;
     default:
@@ -1075,7 +1074,7 @@ app.delete('/admin/categories/:id', (req, res) => {
 });
 
 app.get('/admin/users', (req, res) => {
-  const sql = 'SELECT id, UserName, Country,State,District,Area,Password FROM Users_Database'; // Include password field
+  const sql = 'SELECT id, UserName, Country,State,District,Area,Password FROM users_database'; // Include password field
   db.query(sql, (err, rows) => {
     if (err) {
       console.error('Error fetching users:', err);
@@ -1090,7 +1089,7 @@ app.put('/admin/users/:id', (req, res) => {
   const { username: newUsername,district: newDistrict, country:newCountry, state: newState, loginlocation: newLoginLocation, password: newPassword } = req.body;
 
   db.query(
-    'UPDATE Users_Database SET UserName = ?, Password = ?, Country = ?, State = ?,District = ?, Area = ? WHERE id = ?',
+    'UPDATE users_database SET UserName = ?, Password = ?, Country = ?, State = ?,District = ?, Area = ? WHERE id = ?',
     [newUsername,newPassword, newCountry,newState,newDistrict, newLoginLocation,  id],
     (err, results) => {
       if (err) {
@@ -1106,7 +1105,7 @@ app.put('/admin/users/:id', (req, res) => {
 app.delete('/admin/users/:id', (req, res) => {
   const userId = req.params.id;
       db.query(
-        'DELETE FROM Users_Database WHERE id = ?',
+        'DELETE FROM users_database WHERE id = ?',
         [userId],
         (err, userDeleteResult) => {
           if (err) {
@@ -1362,7 +1361,8 @@ app.get('/orderCount', (req, res) => {
   });
 });
 
+const PORT = process.env.PORT || 5000; // Use the provided PORT environment variable or default to 5000
 
-app.listen(8081, ()=>{
+app.listen(PORT, ()=>{
   console.log("Listening")
 })
