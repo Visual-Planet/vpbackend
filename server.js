@@ -15,10 +15,10 @@ app.use(express.json());
 app.use(express.static('uploads'));
 
 const db = mysql.createConnection({
-  host:"srv1124.hstgr.io",
-  user:"u720690288_appVP",
-  password: "v0f1*24@V",
-  database: "u720690288_VP"
+  host:"localhost",
+  user:"root",
+  password: "",
+  database: "vp"
 })
 
 const storage = multer.diskStorage({
@@ -74,7 +74,7 @@ app.get('/getsig', (req, res) => {
 });
 app.post('/signup', (req, res) => {
   // Note: Removed the id field from the INSERT statement
-  const sql = "INSERT INTO users_database (`UserName`, `Password`, `Country`, `State`, `District`, `Area`) VALUES (?, ?, ?, ?, ?, ?)";
+  const sql = "INSERT INTO Users_Database (`UserName`, `Password`, `Country`, `State`, `District`, `Area`) VALUES (?, ?, ?, ?, ?, ?)";
   
   // Removed the UUID generation and the id from the values array
   const values = [
@@ -105,15 +105,15 @@ app.get('/suggestions/:type', (req, res) => {
 
   switch (type) {
     case 'countries':
-      sql = "SELECT DISTINCT Country AS value FROM users_database";
+      sql = "SELECT DISTINCT Country AS value FROM Users_Database";
       fieldName = 'value';
       break;
     case 'states':
-      sql = "SELECT DISTINCT State AS value FROM users_database";
+      sql = "SELECT DISTINCT State AS value FROM Users_Database";
       fieldName = 'value';
       break;
     case 'districts':
-      sql = "SELECT DISTINCT District AS value FROM users_database";
+      sql = "SELECT DISTINCT District AS value FROM Users_Database";
       fieldName = 'value';
       break;
     default:
@@ -1075,7 +1075,7 @@ app.delete('/admin/categories/:id', (req, res) => {
 });
 
 app.get('/admin/users', (req, res) => {
-  const sql = 'SELECT id, UserName, Country,State,District,Area,Password FROM users_database'; // Include password field
+  const sql = 'SELECT id, UserName, Country,State,District,Area,Password FROM Users_Database'; // Include password field
   db.query(sql, (err, rows) => {
     if (err) {
       console.error('Error fetching users:', err);
@@ -1090,7 +1090,7 @@ app.put('/admin/users/:id', (req, res) => {
   const { username: newUsername,district: newDistrict, country:newCountry, state: newState, loginlocation: newLoginLocation, password: newPassword } = req.body;
 
   db.query(
-    'UPDATE users_database SET UserName = ?, Password = ?, Country = ?, State = ?,District = ?, Area = ? WHERE id = ?',
+    'UPDATE Users_Database SET UserName = ?, Password = ?, Country = ?, State = ?,District = ?, Area = ? WHERE id = ?',
     [newUsername,newPassword, newCountry,newState,newDistrict, newLoginLocation,  id],
     (err, results) => {
       if (err) {
@@ -1106,7 +1106,7 @@ app.put('/admin/users/:id', (req, res) => {
 app.delete('/admin/users/:id', (req, res) => {
   const userId = req.params.id;
       db.query(
-        'DELETE FROM users_database WHERE id = ?',
+        'DELETE FROM Users_Database WHERE id = ?',
         [userId],
         (err, userDeleteResult) => {
           if (err) {
@@ -1363,6 +1363,6 @@ app.get('/orderCount', (req, res) => {
 });
 
 
-app.listen(5000, ()=>{
+app.listen(8081, ()=>{
   console.log("Listening")
 })
